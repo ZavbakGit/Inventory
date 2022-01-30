@@ -1,5 +1,4 @@
-package com.anit.scanner_barcode_library
-import kotlinx.serialization.Serializable
+package com.example.flutter_barcode.service
 
-@Serializable
+
 data class Settings(val name:String)

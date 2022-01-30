@@ -1,14 +1,34 @@
-package com.anit.scanner_barcode_library
+package com.example.flutter_barcode.service
 
 import android.content.Context
 import android.content.Intent
-import kotlinx.serialization.json.Json
+import android.content.IntentFilter
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import com.google.gson.GsonBuilder
 
 
+class ServiceManager(private val context: Context,private val callScanBarcode: (String)->Unit) :
+    LifecycleObserver {
+
+    private val gson = GsonBuilder().create()
+    private val barcodeBroadcastReceiver = BarcodeBroadcastReceiver(callScanBarcode)
 
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onStop(){
+        context.stopService(Intent(context, ScannerService::class.java))
+        context.unregisterReceiver(barcodeBroadcastReceiver);
+    }
 
-class ServiceManager(val context: Context) {
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onStart() {
+        val intFilter = IntentFilter(BROADCAST_ACTION)
+        context.registerReceiver(barcodeBroadcastReceiver, intFilter)
+    }
+
+
 
     companion object{
         const val BROADCAST_ACTION =  "com.anit.scanner_barcode_library.broadcast_action"
@@ -17,12 +37,8 @@ class ServiceManager(val context: Context) {
     }
 
     fun startService(settings: Settings) {
-        val string = Json.encodeToString(Settings.serializer(),settings)
+        val string = gson.toJson(settings)
         val intent = Intent(context, ScannerService::class.java).putExtra(KEY_SETTINGS,string)
         context.startService(intent)
-    }
-
-    fun stopService() {
-        context.stopService(Intent(context, ScannerService::class.java))
     }
 }

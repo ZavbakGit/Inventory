@@ -1,14 +1,15 @@
-package com.anit.scanner_barcode_library
+package com.example.flutter_barcode.service
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import kotlinx.serialization.json.Json
-import java.util.concurrent.TimeUnit
+import com.google.gson.GsonBuilder
 
 
 class ScannerService : Service() {
+
+    private val gson = GsonBuilder().create()
 
     override fun onCreate() {
         super.onCreate()
@@ -17,20 +18,20 @@ class ScannerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("anit", "onStartCommand");
-        val string = intent!!.getStringExtra("settings")
-        val obj = Json.decodeFromString<Settings>(Settings.serializer(), string!!)
+        val string = intent!!.getStringExtra(ServiceManager.KEY_SETTINGS)
+        val obj = gson.fromJson(string, Settings::class.java)
         Log.d("anit", obj.toString());
 
-        //TimeUnit.SECONDS.sleep(3000);
+
 
         sendData(DataBarcode("123456789"));
 
         return START_STICKY
     }
 
-    fun sendData(dataBarcode: DataBarcode) {
+    private fun sendData(dataBarcode: DataBarcode) {
         val intent = Intent(ServiceManager.BROADCAST_ACTION)
-        val string = Json.encodeToString(DataBarcode.serializer(), dataBarcode)
+        val string = gson.toJson(dataBarcode)
         intent.putExtra(ServiceManager.KEY_DATA, string);
         sendBroadcast(intent);
     }
