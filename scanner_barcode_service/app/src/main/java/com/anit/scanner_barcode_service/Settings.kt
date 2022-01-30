@@ -1,4 +1,5 @@
 package com.anit.scanner_barcode_service
+import kotlinx.serialization.Serializable
 
-class Settings {
-}
+@Serializable
+data class Settings(val name:String)
